@@ -1,7 +1,7 @@
 let express = require('express')
 let router = express.Router()
 let userController = require('../controllers/users')
-let { RegisterValidator, validatedResult } = require('../utils/validator')
+let { RegisterValidator, validatedResult, ChangePasswordValidator } = require('../utils/validator')
 let bcrypt = require('bcrypt')
 let jwt = require('jsonwebtoken')
 const { check } = require('express-validator')
@@ -51,8 +51,23 @@ router.post('/login', async function (req, res, next) {
     }
 
 })
-router.get('/me',checkLogin, function (req,res,next) {
+router.get('/me', checkLogin, function (req, res, next) {
     res.send(req.user)
+})
+
+router.post('/changepassword', checkLogin, ChangePasswordValidator, validatedResult, async function (req, res, next) {
+    let { oldpassword, newpassword } = req.body;
+    let userId = req.user._id;
+    let result = await userController.ChangePassword(userId, oldpassword, newpassword);
+    if (result.success) {
+        res.status(200).send({
+            message: result.message
+        })
+    } else {
+        res.status(400).send({
+            message: result.message
+        })
+    }
 })
 
 module.exports = router;
