@@ -6,6 +6,7 @@ let bcrypt = require('bcrypt')
 let jwt = require('jsonwebtoken')
 const { check } = require('express-validator')
 const { checkLogin } = require('../utils/authHandler')
+const { privateKey } = require('../utils/jwtKeys')
 
 router.post('/register', RegisterValidator, validatedResult, async function (req, res, next) {
     let { username, password, email } = req.body;
@@ -29,7 +30,8 @@ router.post('/login', async function (req, res, next) {
             await user.save();
             let token = jwt.sign({
                 id: user._id,
-            }, 'secret', {
+            }, privateKey, {
+                algorithm: 'RS256',
                 expiresIn: '1h'
             })
             res.send(token)
